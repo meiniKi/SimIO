@@ -2,3 +2,4 @@
 *.log
 *.fst
 *.vcd
+obj_dir

@@ -3,4 +3,4 @@
 	url = https://github.com/witchard/sock.sv.git
 [submodule "JSON.sv"]
 	path = JSON.sv
-	url = https://github.com/milestone12/JSON.sv.git
+	url = git@github.com:meiniKi/JSON.sv.git

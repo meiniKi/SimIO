@@ -63,6 +63,9 @@ void do_gpio(state_gpio_t *state, Vgamepad* top)
   state->key_left   = top->key_left_o;
   state->key_a      = top->key_a_o;
   state->key_b      = top->key_b_o;
+
+  top->led1_i = top->key_left_o;
+  top->led2_i = top->key_right_o;
 }
 
 int main(int argc, char **argv, char **env)
@@ -85,7 +88,7 @@ int main(int argc, char **argv, char **env)
   const vluint64_t half_period = 500; // ns
 
   top->clk_i = 1;
-  top->led1_i = 1;
+  top->led1_i = 0;
   top->led2_i = 0;
 
   while (!finish && !Verilated::gotFinish())
