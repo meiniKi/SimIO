@@ -89,7 +89,6 @@ class Gamepad(tk.Frame):
         self.parent.bind('<KeyRelease>', self.handle_keyup)
 
     def recv_thread(self, socket, queue):
-        print("in thread")
         if self.sock == None:
             return
         while not self.stop_event.is_set():
@@ -128,6 +127,8 @@ class Gamepad(tk.Frame):
 
 
     def handle_received(self, frame):
+        # TODO: check prefix
+        logger.info(f"[srv -> gamepad, frame] {frame}")
         for key,value in json.loads(frame).items():
             self.led_map[key].config(bg=self.KEY_ACTIVE_COLOR if value else self.KEY_DEFAULT_COLOR)
 
