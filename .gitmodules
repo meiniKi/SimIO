@@ -1,6 +1,6 @@
-[submodule "sock.sv"]
-	path = sock.sv
-	url = https://github.com/witchard/sock.sv.git
 [submodule "JSON.sv"]
 	path = JSON.sv
 	url = git@github.com:meiniKi/JSON.sv.git
+[submodule "sock.sv"]
+	path = sock.sv
+	url = git@github.com:meiniKi/sock.sv.git
