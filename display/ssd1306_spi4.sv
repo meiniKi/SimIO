@@ -72,9 +72,6 @@ module ssd1306_spi4(
   json::Boolean const_false;
   json::Boolean const_true;
 
-  const_false = new(0);
-  const_true  = new(1);
-
   // Display commands
   localparam DC_CMD_DISP_ENTIRE_ON_DISABLE  = 9'h0_A4;
   localparam DC_CMD_DISP_ENTIRE_ON_ACTIVE   = 9'h0_A5;
@@ -100,6 +97,9 @@ module ssd1306_spi4(
   int adr_pntr_row = 0;
 
   initial begin
+    const_false = new(0);
+    const_true  = new(1);
+
     if (sock_init() < 0) begin
       $fatal("[Error] Cannot init library.");
     end
@@ -141,7 +141,7 @@ end
 task send_data (input int x, input int y, input bit [7:0] data);
   // is this too inefficient? allocation statically
   j = new();
-  s = new(SRV_PREFIX);
+  s = new();
 
   data_str  = new("data");
   j.append("type", data_str);
@@ -156,28 +156,25 @@ task send_data (input int x, input int y, input bit [7:0] data);
   j.append("data", data_int);
 
   j.dumpS(s);
-  r = sock_writeln(h, s.get());
+  r = sock_writeln(h, {SRV_PREFIX, s.get()});
 endtask
 
 task send_cmd (input string key, input Object value);
-  $display("send cmd");
   j = new();
-  s = new(SRV_PREFIX);
+  s = new();
+  $display("send cmd");
 
   data_str  = new("cmd");
   j.append("type", data_str);
-
-  data_str  = new(value);
-  j.append(key, data_str);
-
+  j.append(key, value);
   j.dumpS(s);
-  r = sock_writeln(h, s.get());
+  r = sock_writeln(h, {SRV_PREFIX, s.get()});
 endtask
 
 bit [7:0] spi_dat;
 bit       spi_dc;
 
-// Verilator does not allow incline json::String::new()
+// does not allow incline json::String::new()
 json::String adr_string;
   
 task spi_action_cmd;
@@ -246,9 +243,9 @@ begin
     send_data(adr_pntr_col, adr_pntr_row, spi_dat);
     if (adr_pntr_col == (DISP_WIDTH-8)) begin
       adr_pntr_col = 0;
-      adr_pntr_row += 8;
+      adr_pntr_row += 1;
     end else begin
-      adr_pntr_col += 1;
+      adr_pntr_col += 8;
     end
   end
   default: begin

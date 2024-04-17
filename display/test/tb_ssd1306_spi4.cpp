@@ -36,7 +36,6 @@ uint8_t frame_cnt = 0;
 
 uint8_t spi_data[]  = {0xA7, 0x20, 0x00, 0x55, 0xFF, 0x00, 0x50};
 uint8_t spi_dc[]    = {0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
-
 uint32_t nr_frames = sizeof(spi_data) / sizeof(spi_data[0]);
 
 
@@ -45,7 +44,6 @@ void handle_spi(Vssd1306_spi4* top)
   // longer pause
   if (!frame_active && (pause_cycles_cnt != 0))
   {
-    printf("cs -> 1\n");
     top->cs_in = 1;
     pause_cycles_cnt--;
     return;
@@ -54,7 +52,6 @@ void handle_spi(Vssd1306_spi4* top)
   // start a frame
   if (!frame_active && (frame_cnt < nr_frames))
   {
-    printf("cs -> 0\n");
     frame_active  = 1;
     frame_bit_cnt = 7;
     top->cs_in = 0;
@@ -66,7 +63,6 @@ void handle_spi(Vssd1306_spi4* top)
   // send frame if active
   if (frame_active)
   {
-    printf("next bit\n");
     top->sdi_i  = ((spi_data[frame_cnt] & (1 << frame_bit_cnt)) != 0);
     top->dc_i   = ((spi_dc[frame_cnt] & (1 << frame_bit_cnt)) != 0);
   }
@@ -76,7 +72,6 @@ void handle_spi(Vssd1306_spi4* top)
   {
     if (frame_bit_cnt == 0)
     {
-      printf("frame end\n");
       frame_active = 0;
       pause_cycles_cnt = pause_cycles;
       frame_cnt++;

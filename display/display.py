@@ -7,7 +7,6 @@
 # Usage:    Virtual display to show connect to SystemVerilog model.
 #
 
-import os
 import tkinter as tk
 import socket
 import argparse
@@ -16,7 +15,7 @@ import json
 import threading
 import queue
 import numpy as np
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ class DisplayState:
     def __init__(self, w=128, h=64, scale=2) -> None:
         assert w % 8 == 0, "Must be multiple of 8 bits"
         assert h % 8 == 0, "Must be multiple of 8 bits"
-        self.bitmap = np.zeros((w, h), dtype='bool')
+        self.bitmap = np.zeros((h, w), dtype=np.uint8)
         self.inverted = False
         self.flipped_x = False
         self.flipped_y = False
@@ -71,18 +70,26 @@ class DisplayState:
         x = data["x"]
         y = data["y"]
         for i in range(8):
-            bit = data["data"] & (1 << i) != 0
-            self.bitmap[x % self.w, y % self.h] = bit
+            bit = (data["data"] & (1 << i)) != 0
+            self.bitmap[y % self.h, x % self.w] = 255*bit
             x += dx
             y += dy
 
-    def get_image(self) -> ImageTk.PhotoImage:
+    def get_image(self) -> ImageTk.Image:
         # TODO: inverse, on_off, entire on, flip
-        img =  ImageTk.PhotoImage(image=Image.fromarray(self.bitmap))
-        img = img.resize((self.w*self.scale,self.h*self.scale), Image.ANTIALIAS)
-        return img
+        image=Image.fromarray(self.bitmap if not self.entire_on else 255*np.zeros((self.h, self.w), dtype=np.uint8))
+        image = image.resize((self.w*self.scale,self.h*self.scale))
+
+        if self.inverted:
+            image = ImageOps.invert(image)
+        if self.flipped_x:
+            image = ImageOps.mirror(image)
+        if self.flipped_y:
+            image = ImageOps.flip(image)
+        return image
 
 class Display(tk.Frame):
+    SRV_PREFIX     = "[display]-"
     PX_OFF_COLOR = "black"
     PX_ON_COLOR = "lightgray"
 
@@ -94,8 +101,9 @@ class Display(tk.Frame):
         self.parent.geometry(f"{w*scale}x{h*scale}")
         self.parent.configure(bg="black")
 
-        c = tk.Canvas(self.parent, width=w*scale, heigh=h*scale, bg="black")
-        c.place(x=0, y=0)
+        self.c = tk.Canvas(self.parent, width=w*scale, heigh=h*scale, bg="black")
+        self.c.place(x=0, y=0)
+        self.cimage = None
 
         self.parent.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -116,6 +124,8 @@ class Display(tk.Frame):
             logger.info(f"Connected to server: {addr}:{port}")
             self.rx_thread = threading.Thread(target=self.recv_thread, args=(self.sock, self.rx_queue)).start()
             self.recv_state()
+
+        self.update_image()
  
 
     def recv_thread(self, socket, queue):
@@ -139,15 +149,16 @@ class Display(tk.Frame):
 
 
     def handle_received(self, frame):
-        if not frame.startswith("[display]-"):
+        if not frame.startswith(Display.SRV_PREFIX):
             return
-        frame = frame.removeprefix("[display]-")
+        frame = frame.removeprefix(Display.SRV_PREFIX)
         self.ds.handle_rx(frame)
+        self.update_image()
 
     def update_image(self):
-        img =  ImageTk.PhotoImage(image=Image.fromarray(self.bitmap))
-        
-
+        img = self.ds.get_image()
+        self.cimage = ImageTk.PhotoImage(image=img)
+        self.c.create_image(0, 0, anchor="nw", image=self.cimage)
 
     def on_closing(self):
         self.stop_event.set()
