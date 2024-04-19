@@ -87,7 +87,7 @@ int main(int argc, char **argv, char **env)
   signal(SIGINT, INThandler);
   const vluint64_t half_period = 500; // ns
 
-  top->clk_i = 1;
+  //top->clk_i = 1;
   top->led1_i = 0;
   top->led2_i = 0;
 
@@ -96,10 +96,10 @@ int main(int argc, char **argv, char **env)
     if (tfp) { tfp->dump(time_sim); }
 
     top->eval();
-    do_gpio(&state_gpio, top);
 
     if (time_sim % half_period == 0) {
-      top->clk_i = !top->clk_i;
+      //top->clk_i = !top->clk_i;
+      do_gpio(&state_gpio, top);
     }
 
     time_sim += half_period/2;

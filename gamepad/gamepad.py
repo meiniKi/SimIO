@@ -20,6 +20,8 @@ import queue
 logger = logging.getLogger(__name__)
 
 class Gamepad(tk.Frame):
+    SRV_PREFIX     = "[gamepad]-"
+
     KEY_DEFAULT_COLOR = "lightgray"
     KEY_ACTIVE_COLOR = "yellow"
 
@@ -127,7 +129,9 @@ class Gamepad(tk.Frame):
 
 
     def handle_received(self, frame):
-        # TODO: check prefix
+        if not frame.startswith(Gamepad.SRV_PREFIX):
+            return
+        frame = frame.removeprefix(Gamepad.SRV_PREFIX)
         logger.info(f"[srv -> gamepad, frame] {frame}")
         for key,value in json.loads(frame).items():
             self.led_map[key].config(bg=self.KEY_ACTIVE_COLOR if value else self.KEY_DEFAULT_COLOR)

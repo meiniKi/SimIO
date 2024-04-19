@@ -20,7 +20,7 @@ import sock::*;
 import json::*;
 
 module gamepad(
-  input  logic clk_i,
+  //input  logic clk_i,
 
   input  logic led1_i,
   input  logic led2_i,
@@ -37,7 +37,7 @@ module gamepad(
   localparam SOCK_ADDR = "tcp://localhost:1080";
   
   // Trigger prefix
-  localparam PREFIX = "[gamepad]-";
+  localparam SRV_PREFIX = "[gamepad]-";
 
   timeunit 1ns;
   chandle h;
@@ -65,11 +65,12 @@ module gamepad(
     end
 
     while (1) begin
-      @(negedge clk_i);
+      //@(negedge clk_i);
+      #100
 
       // receive
       rd = sock_readln(h);
-      if ((rd != "") && (rd.substr(0, 9).compare(PREFIX) == 0)) begin
+      if ((rd != "") && (rd.substr(0, 9).compare(SRV_PREFIX) == 0)) begin
         s = new(rd.substr(10, rd.len()-1));
         j = json::LoadS(s);
         assert(j != null);
@@ -92,7 +93,7 @@ module gamepad(
         j.append("led1", led1);
         j.append("led2", led2);
         j.dumpS(s);
-        r = sock_writeln(h, s.get());
+        r = sock_writeln(h, {SRV_PREFIX, s.get()});
       end
       prev_led1_r = led1_i;
       prev_led2_r = led2_i;
