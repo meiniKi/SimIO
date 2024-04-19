@@ -91,7 +91,7 @@ module ssd1306_spi4(
   localparam DC_CMD_ADR_MODE                = 9'h0_20;
 
   // Display state
-  enum int unsigned { ADR_HOR=0, ADR_VERT=1, ADR_PAGE=2, ADR_INVALID=3 } disp_adr_mode = ADR_INVALID;
+  enum int unsigned { ADR_HOR=0, ADR_VERT=1, ADR_PAGE=2, ADR_INVALID=3 } disp_adr_mode = ADR_PAGE;
 
   int adr_pntr_col = 0;
   int adr_pntr_row = 0;
@@ -123,6 +123,10 @@ int         bitcnt = 0;
 int         bytecnt = 0;
 bit   [8:0] active_cmd = 0;
 
+logic       rx_frame_done;
+
+assign rx_frame_done = (bitcnt == 8);
+
 always @(posedge sck_i) begin
   if (!cs_in) begin
     buffer = {buffer[6:0], sdi_i};
@@ -130,12 +134,12 @@ always @(posedge sck_i) begin
   end
 end
 
-always @(posedge cs_in) begin
-  if (bitcnt == 8) begin
+always @(negedge sck_i) begin
+  if (rx_frame_done) begin
     if (~dc_i) spi_action_cmd;
-    else      spi_action_data;
+    else       spi_action_data;
+    bitcnt = 0;
   end
-  bitcnt = 0;
 end
 
 task send_data (input int x, input int y, input bit [7:0] data);
@@ -144,6 +148,7 @@ task send_data (input int x, input int y, input bit [7:0] data);
   s = new();
 
   data_str  = new("data");
+  
   j.append("type", data_str);
 
   data_int  = new(x);
@@ -162,7 +167,6 @@ endtask
 task send_cmd (input string key, input Object value);
   j = new();
   s = new();
-  $display("send cmd");
 
   data_str  = new("cmd");
   j.append("type", data_str);
@@ -183,7 +187,6 @@ begin
   spi_dc  = 1'b0;
 
   if ((~|active_cmd) && (bytecnt == 0)) begin
-    $display("> bytecnt 0");
     case({spi_dc, spi_dat})
       DC_CMD_DISP_ENTIRE_ON_DISABLE: send_cmd(SRV_ENTIRE_ON, const_false);
       DC_CMD_DISP_ENTIRE_ON_ACTIVE:  send_cmd(SRV_ENTIRE_ON, const_true);
@@ -208,24 +211,11 @@ begin
       bytecnt     = 0;
       active_cmd  = 'b0;
       case (spi_dat[1:0])
-        2'b00: begin
-          disp_adr_mode = ADR_HOR;
-          adr_string = new(SRV_ADR_MODE_horizontal);
-        end
-        2'b01: begin
-          disp_adr_mode = ADR_VERT;
-          adr_string = new(SRV_ADR_MODE_vertical);
-        end
-        2'b10: begin
-          disp_adr_mode = ADR_PAGE;
-          adr_string = new(SRV_ADR_MODE_paging);
-        end
-        2'b11: begin
-          disp_adr_mode = ADR_INVALID;
-          adr_string = new(SRV_ADR_MODE_invalid);
-        end
+        2'b00: disp_adr_mode = ADR_HOR;
+        2'b01: disp_adr_mode = ADR_VERT;
+        2'b10: disp_adr_mode = ADR_PAGE;
+        2'b11: disp_adr_mode = ADR_INVALID;
       endcase
-      send_cmd(SRV_ADR_MODE, adr_string);
     end
     // ---  ---
 
@@ -241,11 +231,15 @@ begin
   case(disp_adr_mode)
   ADR_HOR: begin
     send_data(adr_pntr_col, adr_pntr_row, spi_dat);
-    if (adr_pntr_col == (DISP_WIDTH-8)) begin
+    if (adr_pntr_col == (DISP_WIDTH-1)) begin
       adr_pntr_col = 0;
-      adr_pntr_row += 1;
+      if (adr_pntr_row == (DISP_HEIGHT-8)) begin
+        adr_pntr_row = 0;
+      end else begin
+        adr_pntr_row += 8;
+      end
     end else begin
-      adr_pntr_col += 8;
+      adr_pntr_col += 1;
     end
   end
   default: begin

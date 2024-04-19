@@ -25,7 +25,6 @@ class DisplayState:
     SRV_ENTIRE_ON  = "<globon>"
     SRV_FLIP_HOR   = "<flipx>"
     SRV_FLIP_VERT  = "<flipy>"
-    SRV_ADR_MODE   = "<adr>"
     
     def __init__(self, w=128, h=64, scale=2) -> None:
         assert w % 8 == 0, "Must be multiple of 8 bits"
@@ -61,19 +60,18 @@ class DisplayState:
             self.flipped_x = cmd[DisplayState.SRV_FLIP_HOR]
         if DisplayState.SRV_FLIP_VERT in cmd:
             self.flipped_y = cmd[DisplayState.SRV_FLIP_VERT]
-        if DisplayState.SRV_ADR_MODE in cmd:
-            self.adr_mode = cmd[DisplayState.SRV_ADR_MODE]
 
     def handle_data(self, data):
         # TODO other addressing modes
-        dx, dy = (1, 0) if self.adr_mode == 'horizontal' else (0, 1)
         x = data["x"]
         y = data["y"]
         for i in range(8):
             bit = (data["data"] & (1 << i)) != 0
-            self.bitmap[y % self.h, x % self.w] = 255*bit
-            x += dx
-            y += dy
+            self.bitmap[y, x] = 255 if bit else 0
+            y += 1
+            if y == self.h:
+                y = 0
+                x += 1
 
     def get_image(self) -> ImageTk.Image:
         # TODO: inverse, on_off, entire on, flip
@@ -82,9 +80,9 @@ class DisplayState:
 
         if self.inverted:
             image = ImageOps.invert(image)
-        if self.flipped_x:
+        if not self.flipped_x:
             image = ImageOps.mirror(image)
-        if self.flipped_y:
+        if not self.flipped_y:
             image = ImageOps.flip(image)
         return image
 
@@ -132,28 +130,29 @@ class Display(tk.Frame):
         if self.sock == None:
             return
         while not self.stop_event.is_set():
-            data = socket.recv(1024).decode('utf-8')
+            data = socket.recv(4096).decode('utf-8')
             queue.put(data)
 
     def recv_state(self):
         while not self.rx_queue.empty():
             self.rx_incomplete += self.rx_queue.get()
         
-        while "\n" in self.rx_incomplete:
+        frame_cnt = 2*128//8
+        while "\n" in self.rx_incomplete and frame_cnt > 0:
+            frame_cnt -= 1
             tmp = self.rx_incomplete.split('\n', 1)
             frame = tmp[0]
             self.rx_incomplete = tmp[1]
-            logger.info(f"[srv -> display, frame] {frame}")
+            #logger.info(f"[srv -> display, frame] {frame}")
             self.handle_received(frame)
-        self.after(100, self.recv_state)
-
+        self.update_image()
+        self.after(10, self.recv_state)
 
     def handle_received(self, frame):
         if not frame.startswith(Display.SRV_PREFIX):
             return
         frame = frame.removeprefix(Display.SRV_PREFIX)
         self.ds.handle_rx(frame)
-        self.update_image()
 
     def update_image(self):
         img = self.ds.get_image()
