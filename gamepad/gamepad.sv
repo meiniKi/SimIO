@@ -20,7 +20,7 @@ import sock::*;
 import json::*;
 
 module gamepad(
-  //input  logic clk_i,
+  input  logic clk_i,
 
   input  logic led1_i,
   input  logic led2_i,
@@ -65,8 +65,8 @@ module gamepad(
     end
 
     while (1) begin
-      //@(negedge clk_i);
-      #100
+      @(negedge clk_i);
+      //#100
 
       // receive
       rd = sock_readln(h);
@@ -105,6 +105,5 @@ final begin
 	sock_close(h);
 	sock_shutdown();
 end
-
 
 endmodule

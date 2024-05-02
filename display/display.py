@@ -130,7 +130,7 @@ class Display(tk.Frame):
         if self.sock == None:
             return
         while not self.stop_event.is_set():
-            data = socket.recv(4096).decode('utf-8')
+            data = socket.recv(256).decode('utf-8')
             queue.put(data)
 
     def recv_state(self):

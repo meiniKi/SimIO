@@ -90,6 +90,8 @@ module ssd1306_spi4(
 
   localparam DC_CMD_ADR_MODE                = 9'h0_20;
 
+  localparam DC_CMD_PAGE_ADR                = 9'h0_B?;
+
   // Display state
   enum int unsigned { ADR_HOR=0, ADR_VERT=1, ADR_PAGE=2, ADR_INVALID=3 } disp_adr_mode = ADR_PAGE;
 
@@ -187,7 +189,7 @@ begin
   spi_dc  = 1'b0;
 
   if ((~|active_cmd) && (bytecnt == 0)) begin
-    case({spi_dc, spi_dat})
+    casez({spi_dc, spi_dat})
       DC_CMD_DISP_ENTIRE_ON_DISABLE: send_cmd(SRV_ENTIRE_ON, const_false);
       DC_CMD_DISP_ENTIRE_ON_ACTIVE:  send_cmd(SRV_ENTIRE_ON, const_true);
       DC_CMD_DISP_INVERSE_DISABLE:   send_cmd(SRV_INV, const_false);
@@ -198,6 +200,10 @@ begin
       DC_CMD_SEG_REMAP_INVERSE:      send_cmd(SRV_FLIP_HOR, const_true);
       DC_CMD_COM_DIR_DEFAULT:        send_cmd(SRV_FLIP_VERT, const_false);
       DC_CMD_COM_DIR_REVERSE:        send_cmd(SRV_FLIP_VERT, const_true);
+      DC_CMD_PAGE_ADR: begin
+        adr_pntr_col = 0;
+        adr_pntr_row = {25'b0, spi_dat[3:0], 3'b000};
+      end
       DC_CMD_ADR_MODE: begin
         active_cmd  = DC_CMD_ADR_MODE;
         bytecnt     = 'd1;
@@ -242,6 +248,14 @@ begin
       adr_pntr_col += 1;
     end
   end
+  ADR_PAGE: begin
+    send_data(adr_pntr_col, adr_pntr_row, spi_dat);
+    if (adr_pntr_col == (DISP_WIDTH-1)) begin
+      adr_pntr_col = 0;
+    end else begin
+      adr_pntr_col += 1;
+    end
+  end
   default: begin
     adr_pntr_col = 0;
     adr_pntr_row = 0;
@@ -249,6 +263,5 @@ begin
   endcase
 end
 endtask
-
 
 endmodule

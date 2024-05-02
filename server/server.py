@@ -39,7 +39,7 @@ class Server:
         logger.info(f"New client: {client_addr}")
         while True:
             try:
-                data = client_socket.recv(1024)
+                data = client_socket.recv(128)
                 if not data:
                     break
                 logger.info(f"[{client_addr} -> srv]: {data}")
@@ -73,7 +73,7 @@ def get_args():
 
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.WARNING,
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[
             logging.FileHandler("debug.log"),
