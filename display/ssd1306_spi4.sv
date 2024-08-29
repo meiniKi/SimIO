@@ -43,7 +43,7 @@ module ssd1306_spi4(
   localparam SOCK_ADDR = "tcp://localhost:1080";
   
   // Server commands
-  string SRV_PREFIX     = "[display]-";
+  string SRV_PREFIX     = "[displaybw]-";
 
   string SRV_INV        = "<inverse>";
   string SRV_ONOFF      = "<onoff>";
