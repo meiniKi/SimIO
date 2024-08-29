@@ -3,7 +3,7 @@
 # Copyright (c) 2024 Meinhard Kissich
 # SPDX-License-Identifier: MIT
 #
-# File:     display.py
+# File:     display_bw.py
 # Usage:    Virtual display to show connect to SystemVerilog model.
 #
 
@@ -87,7 +87,7 @@ class DisplayState:
         return image
 
 class Display(tk.Frame):
-    SRV_PREFIX     = "[display]-"
+    SRV_PREFIX     = "[displaybw]-"
     PX_OFF_COLOR = "black"
     PX_ON_COLOR = "lightgray"
 
