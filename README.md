@@ -1,9 +1,9 @@
 # SimIO
 
-SimIO is a library of modular virtual peripherals to interact with a running HDL simulation. It consists of a collection of lightweight components that can be attached to the device under test (DUT) by instantiating the desired SimIO component in a SystemVerilog wrapper/testbench. For example, a virtual VGA screen display can be instantiated in the testbench. Wiring is as easy as connecting `Red`, `Green`, `Blue`, as well as the synchronization signals `VSync` and `HSync` from your design and the SimIO component. The Python GUI (irtual VGA screen) receives live data from the simulation and displays the image. The library builds on the SystemVerilog Direct Programming Interface (DPI) and is simulator-agnostic.
+SimIO is a collection of modular virtual components to interact with a running HDL simulation. Its components can be attached to the device under test (DUT) by instantiating the desired SimIO component in a SystemVerilog wrapper/testbench. For example, a virtual VGA screen display can be instantiated in the testbench. Wiring is as easy as connecting `Red`, `Green`, `Blue`, as well as the synchronization signals `VSync` and `HSync` from your design and the SimIO component. The Python GUI (virtual VGA screen) receives live data from the simulation and displays the image. The library builds on the SystemVerilog Direct Programming Interface (DPI) and is simulator-agnostic.
 
 > [!IMPORTANT]  
-> :triangular_ruler: Please note that the library is work in progress. Please feel free to open a PR for bugfixes or adding components.
+> :triangular_ruler: Please note that the library is work in progress. Please feel free to open a PR for bugfixes or added components.
 
 
 # Operation
@@ -17,14 +17,14 @@ The diagram above depicts the structure of the library. The testbench includes a
 ![Example SSD1306](./doc/example_ssd1306.png)
 
 
-The example shows the data flow for an SSD1306 OLED display with SPI interface. `simio_ssd1306_spi4.sv` implements the SystemVerilog model that can be instantiated in the simulation. It receives the data and maintains an internal state, e.g., the addressing mode it is configured to. The hardware-specific configuration is converted into a display-generic interpretation, e.g., (a) display inverted: true/false, (b) display pixel data, etc. This information is parsed to a JSON string by `json.sv`. Once parsed, the DPI-C is used to communicate with a Python socket server by `sock.sv`. It receives the JSON string and distributes it to all clients connected to the server. In this example, it is `gui_display_bw.py`, a generic black-and-white display. An identifier prefixes each JSON stringr, so only the addressed client will process it. The client decodes the data and, in the case of the display GUI, draws the data on a tkinter canvas.
+The example shows the data flow for an SSD1306 OLED display with SPI interface. `simio_ssd1306_spi4.sv` implements the SystemVerilog model that can be instantiated in the simulation. It receives the data and maintains an internal state, e.g., the addressing mode it is configured to. The hardware-specific configuration is converted into a display-generic interpretation, e.g., (a) display inverted: true/false, (b) display pixel data, etc. This information is parsed to a JSON string by `json.sv`. Once parsed, the DPI-C is used to communicate with a Python socket server by `sock.sv`. It receives the JSON string and distributes it to all clients connected to the server. In this example, it is `gui_display_bw.py`, a generic black-and-white display. An identifier prefixes each JSON string, so only the addressed client will process it. The client decodes the data and, in the case of the display GUI, draws the data on a tkinter canvas.
 
 # Quickstart
 This Quickstart demonstrates how to get started by example.
 
 ## Prepare venv
 
-Prepare the virtual environment and activate it in all shell sessions.
+Prepare the virtual environment and activate it in **all** shell sessions.
 
 ```shell
 git submodule update --init
@@ -42,6 +42,8 @@ python3 server/server.py
 ```
 
 ## Gamepad
+
+In this example, the DUT is a simple 2-output blinker. Each output has an individual _enable_ signal. To test it, the Gamepad SimIO component is used. Two buttons of the Gamepad are wired to the _enable_ signals. The corresponding outputs are connected to the status LEDs in the Gamepad. The Gamepad has two modes: either buttons are only high while the corresponding key is pressed, or the keys are captured until pressed a second time. Use the spacebar to toggle the mode.
 
 <p align="center">
   <img src="./doc/gamepad.gif" />

@@ -16,7 +16,6 @@ example.vga.shader:
 example.vga.donut:
 	make -C examples/vga/donut
 
-
 .PHONY: example.ssd1306
 example.ssd1306:
 	make -C examples/ssd1306
