@@ -1,3 +1,13 @@
+// Copyright (c) 2024 Meinhard Kissich
+// SPDX-License-Identifier: MIT
+// -----------------------------------------------------------------------------
+// File  :  sim_vga_wrapper.sv
+// Usage :  Wrapper for a VGA example
+
+// Ports
+//  - clk_i   Clock
+//  - rst_in  Low active reset
+// -----------------------------------------------------------------------------
 
 module sim_vga_wrapper (
   input clk_i,
@@ -10,7 +20,7 @@ logic [1:0] b;
 logic hs;
 logic vs;
 
-tiny_vga i_tiny_vga (
+simio_vga i_simio_vga (
   .r_i  ( r   ),
   .g_i  ( g   ),
   .b_i  ( b   ),
@@ -31,5 +41,6 @@ top i_top (
     .next_vertical  (),
     .next_frame     ()  
 );
+
 
 endmodule

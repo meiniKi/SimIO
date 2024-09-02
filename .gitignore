@@ -3,3 +3,5 @@
 *.fst
 *.vcd
 obj_dir
+.vscode
+examples/vga/donut/data

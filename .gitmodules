@@ -4,3 +4,12 @@
 [submodule "sock.sv"]
 	path = sock.sv
 	url = git@github.com:meiniKi/sock.sv.git
+[submodule "examples/vga/sprite/tt05-one-sprite-pony"]
+	path = examples/vga/sprite/tt05-one-sprite-pony
+	url = https://github.com/mole99/tt05-one-sprite-pony.git
+[submodule "examples/vga/shader/tt06-tiny-shader"]
+	path = examples/vga/shader/tt06-tiny-shader
+	url = https://github.com/mole99/tt06-tiny-shader.git
+[submodule "examples/vga/donut/tt08-vga-donut"]
+	path = examples/vga/donut/tt08-vga-donut
+	url = https://github.com/a1k0n/tt08-vga-donut.git

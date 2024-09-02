@@ -1,43 +1,43 @@
 // Copyright (c) 2024 Meinhard Kissich
 // SPDX-License-Identifier: MIT
 // -----------------------------------------------------------------------------
-// File  :  tiny_vga.sv
-// Usage :  SystemVerilog Tiny VGA model.
+// File  :  simio_vga.sv
+// Usage :  SystemVerilog SimIO VGA Display
+// GUI   :  display_vga.py
 //
 // Ports
-//  - cs_in       Chip select, low active.
-//  - sdi_i       Serial data in.
-//  - sck_i       Serial clock.
-//  - dc_i        Data / command select.
+//  - r_i   VGA red.
+//  - g_i   VGA green.
+//  - b_i   VGA blue.
+//  - hs_i  Horizontal sync.
+//  - vs_i  Vertical sync.
 // -----------------------------------------------------------------------------
 
 import sock::*;
 import json::*;
 
-module tiny_vga(
-  input  logic [1:0] r_i,
-  input  logic [1:0] g_i,
-  input  logic [1:0] b_i,
+module simio_vga
+#(
+  parameter RGB_DEPTH = 2,
+  parameter SOCK_ADDR = "tcp://localhost:1080"
+) (
+  input  logic [RGB_DEPTH-1:0] r_i,
+  input  logic [RGB_DEPTH-1:0] g_i,
+  input  logic [RGB_DEPTH-1:0] b_i,
   input  logic hs_i,
   input  logic vs_i
 );
-
-  // Adapt server and port here
-  localparam SOCK_ADDR = "tcp://localhost:1080";
   
-  localparam RGB_DEPTH = 2;
+// Server commands
+string SRV_PREFIX     = "[displayvga]-";
 
-  // Server commands
-  string SRV_PREFIX     = "[displayvga]-";
-
-  timeunit 1ns;
-  chandle h;
-  Object j = null;
-  json::Integer data_int;
-  util::String s;
-  json::String data_str;
-  int r;
-
+timeunit 1ns;
+chandle h;
+Object j = null;
+json::Integer data_int;
+util::String s;
+json::String data_str;
+int r;
 
 initial begin
   if (sock_init() < 0) begin
@@ -80,6 +80,7 @@ task send_hs_vs (input string hs_vs, input bit val);
   j.dumpS(s);
   r = sock_writeln(h, {SRV_PREFIX, s.get()});
 endtask
+
 
 task send_rgb (input bit [RGB_DEPTH-1:0] cr,
               input bit [RGB_DEPTH-1:0] cg,

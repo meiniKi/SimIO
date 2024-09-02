@@ -3,7 +3,7 @@
 # Copyright (c) 2024 Meinhard Kissich
 # SPDX-License-Identifier: MIT
 #
-# File:     display_bw.py
+# File:     gui_display_bw.py
 # Usage:    Virtual display to show connect to SystemVerilog model.
 #
 
@@ -143,7 +143,7 @@ class Display(tk.Frame):
             tmp = self.rx_incomplete.split('\n', 1)
             frame = tmp[0]
             self.rx_incomplete = tmp[1]
-            #logger.info(f"[srv -> display, frame] {frame}")
+            logger.debug(f"[srv -> display, frame] {frame}")
             self.handle_received(frame)
         self.update_image()
         self.after(10, self.recv_state)
@@ -170,7 +170,7 @@ class Display(tk.Frame):
 
 def main(socks_connect, addr, port, width, height, scale):
     root = tk.Tk()
-    Display(root, width, height, scale, socks_connect, addr, port).pack(side="top", fill="both", expand=True)
+    Display(root, w=width, h=height, scale=scale, socks_connect=socks_connect, addr=addr, port=port).pack(side="top", fill="both", expand=True)
     root.mainloop()
 
 def get_args():

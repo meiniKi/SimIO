@@ -11,7 +11,7 @@
 #include <signal.h>
 
 #include "verilated_fst_c.h"
-#include "Vssd1306_spi4.h"
+#include "Vsimio_ssd1306_spi4.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ uint8_t spi_dc[]    = {0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
 uint32_t nr_frames = sizeof(spi_data) / sizeof(spi_data[0]);
 
 
-void handle_spi(Vssd1306_spi4* top)
+void handle_spi(Vsimio_ssd1306_spi4* top)
 {
   // longer pause
   if (!frame_active && (pause_cycles_cnt != 0))
@@ -86,7 +86,7 @@ int main(int argc, char **argv, char **env)
 {
   Verilated::commandArgs(argc, argv);
 
-  Vssd1306_spi4* top = new Vssd1306_spi4;
+  Vsimio_ssd1306_spi4* top = new Vsimio_ssd1306_spi4;
 
   VerilatedFstC *tfp = 0;
   const char *fst = Verilated::commandArgsPlusMatch("fst=");

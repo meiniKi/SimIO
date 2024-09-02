@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Meinhard Kissich
 // SPDX-License-Identifier: MIT
 // -----------------------------------------------------------------------------
-// File  :  ssd1306_spi.sv
+// File  :  simio_ssd1306_spi4.sv
 // Usage :  SystemVerilog SSD1306 SPI 4-wire model.
 //
 // Limitations: Only a subset of commands are supported. All others are ignored.
@@ -32,16 +32,16 @@
 import sock::*;
 import json::*;
 
-module ssd1306_spi4(
+module simio_ssd1306_spi4
+#(
+  parameter SOCK_ADDR = "tcp://localhost:1080"
+) (
   input  logic cs_in,
   input  logic sdi_i,
   input  logic sck_i,
   input  logic dc_i
 );
 
-  // Adapt server and port here
-  localparam SOCK_ADDR = "tcp://localhost:1080";
-  
   // Server commands
   string SRV_PREFIX     = "[displaybw]-";
 

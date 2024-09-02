@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Meinhard Kissich
 // SPDX-License-Identifier: MIT
 // -----------------------------------------------------------------------------
-// File  :  tb.cpp
+// File  :  ex2_tb_gamepad.cpp
 // Usage :  Testbench for SystemVerilog Gamepad model.
 // -----------------------------------------------------------------------------
 

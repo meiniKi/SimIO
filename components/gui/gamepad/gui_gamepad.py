@@ -3,7 +3,7 @@
 # Copyright (c) 2024 Meinhard Kissich
 # SPDX-License-Identifier: MIT
 #
-# File:     gamepad.py
+# File:     gui_gamepad.py
 # Usage:    Gamepad GUI to connect to Gamepad SystemVerilog model.
 #
 
@@ -25,8 +25,8 @@ class Gamepad(tk.Frame):
     KEY_DEFAULT_COLOR = "lightgray"
     KEY_ACTIVE_COLOR = "yellow"
 
-    MODE_CAPTURE = "capture"
-    MODE_TOGGLE = "toggle"
+    MODE_CAPTURE = "capture (space)"
+    MODE_TOGGLE = "toggle (space)"
 
     def __init__(self, parent, socks_connect=False, addr=None, port=1000, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -47,7 +47,7 @@ class Gamepad(tk.Frame):
         self.keypad_frame.grid(row=1, column=1, padx=10, pady=10)
 
         # mode indicator
-        self.lbl_mode = tk.Label(self.main_frame, text=self.MODE_CAPTURE, bg="lightgray", width=8)
+        self.lbl_mode = tk.Label(self.main_frame, text=self.MODE_CAPTURE, bg="lightgray", width=15)
         self.lbl_mode.grid(row=0, column=0, columnspan=1, padx=5, pady=5)
 
         # create led indicators
@@ -111,7 +111,7 @@ class Gamepad(tk.Frame):
         dat = json.dumps(self.get_translated_sensor_state())
         dat = "[gamepad]-" + dat + "\n"
         dat = dat.encode()
-        logger.info(f"[gamepad -> srv] {dat}")
+        logger.debug(f"[gamepad -> srv] {dat}")
         if self.sock == None:
             return
         self.sock.sendall(dat)
@@ -125,14 +125,14 @@ class Gamepad(tk.Frame):
             frame = tmp[0]
             self.rx_incomplete = tmp[1]
             self.handle_received(frame)
-        self.after(100, self.recv_state)
+        self.after(10, self.recv_state)
 
 
     def handle_received(self, frame):
         if not frame.startswith(Gamepad.SRV_PREFIX):
             return
         frame = frame.removeprefix(Gamepad.SRV_PREFIX)
-        logger.info(f"[srv -> gamepad, frame] {frame}")
+        logger.debug(f"[srv -> gamepad, frame] {frame}")
         for key,value in json.loads(frame).items():
             self.led_map[key].config(bg=self.KEY_ACTIVE_COLOR if value else self.KEY_DEFAULT_COLOR)
 

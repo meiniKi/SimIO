@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Meinhard Kissich
 // SPDX-License-Identifier: MIT
 // -----------------------------------------------------------------------------
-// File  :  gamepad.sv
+// File  :  gui_gamepad.sv
 // Usage :  SystemVerilog Gamepad model.
 //
 // Ports
@@ -19,7 +19,10 @@
 import sock::*;
 import json::*;
 
-module gamepad(
+module gamepad
+#(
+  parameter SOCK_ADDR = "tcp://localhost:1080"
+) (
   input  logic clk_i,
 
   input  logic led1_i,
@@ -32,11 +35,8 @@ module gamepad(
   output logic key_a_o,
   output logic key_b_o
 );
-
-  // Adapt server and port here
-  localparam SOCK_ADDR = "tcp://localhost:1080";
   
-  // Trigger prefix
+  // Server commands
   localparam SRV_PREFIX = "[gamepad]-";
 
   timeunit 1ns;
